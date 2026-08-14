@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { Montserrat, Roboto } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getSession } from "@/lib/auth";
-import { isPortalHost } from "@/lib/site-mode";
 import type { MemberRole } from "@/lib/nav";
 
 const montserrat = Montserrat({
@@ -33,8 +31,6 @@ export default async function RootLayout({
 }>) {
   const session = await getSession();
   const role: MemberRole | null = session ? (session.role === "abonnent" ? "abonnent" : "intern") : null;
-  const host = (await headers()).get("host");
-  const portalMode = isPortalHost(host);
 
   return (
     <html
@@ -42,9 +38,9 @@ export default async function RootLayout({
       className={`${montserrat.variable} ${roboto.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Header loggedIn={!!session} role={role} portalMode={portalMode} />
+        <Header loggedIn={!!session} role={role} />
         <main className="flex-1">{children}</main>
-        <Footer portalMode={portalMode} />
+        <Footer />
       </body>
     </html>
   );

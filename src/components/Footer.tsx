@@ -2,21 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { footerNav } from "@/lib/nav";
 
-export default function Footer({ portalMode = false }: { portalMode?: boolean }) {
+export default function Footer() {
   const year = new Date().getFullYear();
 
-  // Auf der reduzierten Portal-Domain (z. B. VTG NRW) nur Startseite, Login/
-  // Mitgliederbereich sowie die Pflichtangaben nach TMG zeigen (siehe
-  // src/lib/site-mode.ts).
-  const serviceLinks = portalMode
-    ? footerNav.service.filter((item) => item.href === "/")
-    : footerNav.service;
-  const uebersichtLinks = portalMode ? [] : footerNav.uebersicht;
-  const legalLinks = portalMode
-    ? footerNav.legal.filter(
-        (item) => item.href === "/impressum" || item.href === "/datenschutzerklaerung",
-      )
-    : footerNav.legal;
+  // VTG NRW zeigt bewusst nur Startseite, Login/Mitgliederbereich sowie die
+  // Pflichtangaben nach TMG — der volle Webauftritt läuft ausschliesslich im
+  // separaten VTG-RLP-Projekt/Repo.
+  const serviceLinks = footerNav.service.filter((item) => item.href === "/");
+  const uebersichtLinks: typeof footerNav.uebersicht = [];
+  const legalLinks = footerNav.legal.filter(
+    (item) => item.href === "/impressum" || item.href === "/datenschutzerklaerung",
+  );
 
   return (
     <footer className="border-t-[1.5px] border-vtg-yellow bg-white text-neutral-800">

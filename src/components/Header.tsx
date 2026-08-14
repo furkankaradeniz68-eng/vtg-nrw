@@ -160,19 +160,17 @@ function MobileMenu({ items, onNavigate }: { items: NavItem[]; onNavigate: () =>
 export default function Header({
   loggedIn,
   role,
-  portalMode = false,
 }: {
   loggedIn: boolean;
   role: MemberRole | null;
-  portalMode?: boolean;
 }) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Auf der reduzierten Portal-Domain (z. B. VTG NRW) bleibt vom Hauptmenü
-  // nur der Login-Link übrig — der volle Webauftritt läuft ausschliesslich
-  // auf der Hauptdomain (siehe src/lib/site-mode.ts).
-  const baseNav = portalMode ? mainNav.filter((item) => item.href === "/login") : mainNav;
+  // VTG NRW zeigt im Hauptmenü bewusst nur den Login-Link — der volle
+  // Webauftritt mit allen Unterseiten läuft ausschliesslich im separaten
+  // VTG-RLP-Projekt/Repo.
+  const baseNav = mainNav.filter((item) => item.href === "/login");
   const navItems = loggedIn ? baseNav.filter((item) => item.href !== "/login") : baseNav;
 
   async function handleLogout() {

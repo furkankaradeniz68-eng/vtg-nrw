@@ -1,18 +1,27 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { isAllowedOnPortal, isPortalHost } from "@/lib/site-mode";
+import { isFileHref } from "@/lib/nav";
 
-// Blockt auf einer als "Portal"-Domain markierten Domain (siehe
-// src/lib/site-mode.ts) alle Seiten ausser Startseite, Login und
-// Mitgliederbereich mit einem echten 404 — der volle Webauftritt bleibt
-// ausschliesslich auf der Hauptdomain (Projekt "vtg") erreichbar.
+// VTG NRW ist ein eigenständiges, reduziertes Deployment: nur Startseite,
+// Login und der komplette Mitgliederbereich sind erreichbar — nicht der
+// volle Webauftritt (News, Satzung, Kontakt-Unterseiten usw.), der
+// ausschliesslich im separaten VTG-RLP-Projekt/Repo läuft. Alles andere
+// liefert ein echtes 404.
+const EXTRA_ALLOWED_PATHS = ["/impressum", "/datenschutzerklaerung"];
+
+function isAllowed(pathname: string): boolean {
+  if (isFileHref(pathname)) return true;
+  if (pathname === "/") return true;
+  if (pathname.startsWith("/login")) return true;
+  if (pathname.startsWith("/mitgliederbereich")) return true;
+  if (pathname.startsWith("/api")) return true;
+  if (pathname.startsWith("/_next")) return true;
+  if (EXTRA_ALLOWED_PATHS.includes(pathname)) return true;
+  return false;
+}
+
 export function middleware(request: NextRequest) {
-  const host = request.headers.get("host");
-  if (!isPortalHost(host)) {
-    return NextResponse.next();
-  }
-
   const { pathname } = request.nextUrl;
-  if (isAllowedOnPortal(pathname)) {
+  if (isAllowed(pathname)) {
     return NextResponse.next();
   }
 
