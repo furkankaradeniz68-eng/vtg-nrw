@@ -13,6 +13,7 @@ function isAllowed(pathname: string): boolean {
   if (pathname === "/") return true;
   if (pathname.startsWith("/login")) return true;
   if (pathname.startsWith("/mitgliederbereich")) return true;
+  if (pathname.startsWith("/admin")) return true;
   if (pathname.startsWith("/api")) return true;
   if (pathname.startsWith("/_next")) return true;
   if (EXTRA_ALLOWED_PATHS.includes(pathname)) return true;
