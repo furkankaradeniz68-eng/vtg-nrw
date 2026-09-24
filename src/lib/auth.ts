@@ -67,3 +67,10 @@ export async function requireInternSession(): Promise<SessionPayload> {
   if (session.role === "abonnent") redirect("/");
   return session;
 }
+
+// Admin only.
+export async function requireAdminSession(): Promise<SessionPayload> {
+  const session = await requireSession();
+  if (session.role !== "admin") redirect("/");
+  return session;
+}

@@ -38,7 +38,7 @@ export default async function RootLayout({
       className={`${montserrat.variable} ${roboto.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Header loggedIn={!!session} role={role} />
+        <Header loggedIn={!!session} role={role} isAdmin={session?.role === "admin"} />
         <main className="flex-1">{children}</main>
         <Footer />
       </body>
