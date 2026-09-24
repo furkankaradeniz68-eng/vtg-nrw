@@ -167,11 +167,7 @@ export default function Header({
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // VTG NRW zeigt im Hauptmenü bewusst nur den Login-Link — der volle
-  // Webauftritt mit allen Unterseiten läuft ausschliesslich im separaten
-  // VTG-RLP-Projekt/Repo.
-  const baseNav = mainNav.filter((item) => item.href === "/login");
-  const navItems = loggedIn ? baseNav.filter((item) => item.href !== "/login") : baseNav;
+  const navItems = loggedIn ? mainNav.filter((item) => item.href !== "/login") : mainNav;
 
   async function handleLogout() {
     await fetch("/api/logout", { method: "POST" });

@@ -19,9 +19,9 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "VTG Rheinland-Pfalz | Verband der Teilnehmergemeinschaften",
+  title: "VTG Nordrhein-Westfalen | Verband der Teilnehmergemeinschaften",
   description:
-    "Der Verband der Teilnehmergemeinschaften Rheinland-Pfalz (VTG) ist der Dachverband der Teilnehmergemeinschaften von Bodenordnungsverfahren in Rheinland-Pfalz.",
+    "Der Verband der Teilnehmergemeinschaften Nordrhein-Westfalen (VTG) ist der Dachverband der Teilnehmergemeinschaften von Bodenordnungsverfahren in Nordrhein-Westfalen.",
 };
 
 export default async function RootLayout({

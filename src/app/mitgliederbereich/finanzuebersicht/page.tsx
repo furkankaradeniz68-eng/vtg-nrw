@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { requireSession } from "@/lib/auth";
-import { findVerfahren, istVerfahrenErreichbar } from "@/lib/verfahren-beispieldaten";
+import { findVerfahren, istVerfahrenErreichbar } from "@/lib/bc-companies";
 import {
-  finanzKategorien,
-  finanzUebersichtKennzahlenBeispiel,
+  gesamtsummeFuerKategorie,
+  getFinanzUebersichtKennzahlen,
   type FinanzKategorieSlug,
-} from "@/lib/finanzbericht-beispieldaten";
+} from "@/lib/bc-budget-lines";
 
-export const metadata: Metadata = { title: "Finanzübersicht | VTG Rheinland-Pfalz" };
+export const metadata: Metadata = { title: "Finanzübersicht | VTG Nordrhein-Westfalen" };
 
 const berichte: { titel: string; href: string; kategorieSlug: FinanzKategorieSlug }[] = [
   {
@@ -29,10 +29,6 @@ function formatEuro(n: number) {
   return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function gesamtsumme(slug: FinanzKategorieSlug) {
-  return finanzKategorien[slug].zeilen.find((zeile) => zeile.typ === "gesamt")?.ausgaben ?? 0;
-}
-
 export default async function FinanzuebersichtPage({
   searchParams,
 }: {
@@ -41,9 +37,18 @@ export default async function FinanzuebersichtPage({
   const session = await requireSession();
   const { id: rawId } = await searchParams;
   const id = rawId ?? (session.role === "abonnent" ? session.username : undefined);
-  const zugriffErlaubt = id ? istVerfahrenErreichbar(session, id) : false;
-  const verfahren = zugriffErlaubt && id ? findVerfahren(id) : undefined;
-  const k = finanzUebersichtKennzahlenBeispiel;
+  const zugriffErlaubt = id ? await istVerfahrenErreichbar(session, id) : false;
+  const verfahren = zugriffErlaubt && id ? await findVerfahren(id) : undefined;
+  const k = verfahren ? await getFinanzUebersichtKennzahlen(verfahren.nr) : undefined;
+  const gesamtsummen: Partial<Record<FinanzKategorieSlug, number>> = verfahren
+    ? Object.fromEntries(
+        await Promise.all(
+          berichte.map(
+            async (b) => [b.kategorieSlug, await gesamtsummeFuerKategorie(verfahren.nr, b.kategorieSlug)] as const,
+          ),
+        ),
+      )
+    : {};
 
   return (
     <>
@@ -76,28 +81,28 @@ export default async function FinanzuebersichtPage({
                 <span className="font-medium text-neutral-900">{verfahren.name}</span>
               </div>
               <div className="flex justify-between py-1.5">
-                <span>DLR:</span>
+                <span>Bezirksregierung:</span>
                 <span className="font-medium text-neutral-900">{verfahren.dienstsitz}</span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span>Kontostand:</span>
-                <span className="font-medium text-neutral-900">{formatEuro(k.kontostand)}</span>
+                <span className="font-medium text-neutral-900">{formatEuro(k!.kontostand)}</span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span>Forderungen / Verbindlichkeiten:</span>
                 <span className="font-medium text-neutral-900">
-                  {formatEuro(k.forderungenVerbindlichkeiten)}
+                  {formatEuro(k!.forderungenVerbindlichkeiten)}
                 </span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span>Forderungen / Verbindlichkeiten BD:</span>
                 <span className="font-medium text-neutral-900">
-                  {formatEuro(k.forderungenVerbindlichkeitenBD)}
+                  {formatEuro(k!.forderungenVerbindlichkeitenBD)}
                 </span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span>Vermögen der TG</span>
-                <span className="font-medium text-neutral-900">{formatEuro(k.vermoegenDerTG)}</span>
+                <span className="font-medium text-neutral-900">{formatEuro(k!.vermoegenDerTG)}</span>
               </div>
             </div>
 
@@ -112,7 +117,7 @@ export default async function FinanzuebersichtPage({
                       {bericht.titel}:
                     </span>
                     <span className="w-32 shrink-0 bg-vtg-orange px-4 py-2.5 text-right text-white">
-                      {formatEuro(gesamtsumme(bericht.kategorieSlug))}
+                      {formatEuro(gesamtsummen[bericht.kategorieSlug] ?? 0)}
                     </span>
                   </Link>
                 </li>

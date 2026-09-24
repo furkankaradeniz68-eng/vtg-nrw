@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { requireSession } from "@/lib/auth";
-import { findVerfahren, istVerfahrenErreichbar } from "@/lib/verfahren-beispieldaten";
-import { getPersonendaten } from "@/lib/verfahren-personendaten";
+import { findVerfahren, istVerfahrenErreichbar } from "@/lib/bc-companies";
 
-export const metadata: Metadata = { title: "Verfahrensdaten | VTG Rheinland-Pfalz" };
+export const metadata: Metadata = { title: "Verfahrensdaten | VTG Nordrhein-Westfalen" };
 
 export default async function VerfahrensdatenPage({
   searchParams,
@@ -15,9 +14,8 @@ export default async function VerfahrensdatenPage({
   const session = await requireSession();
   const { id: rawId } = await searchParams;
   const id = rawId ?? (session.role === "abonnent" ? session.username : undefined);
-  const zugriffErlaubt = id ? istVerfahrenErreichbar(session, id) : false;
-  const verfahren = zugriffErlaubt && id ? findVerfahren(id) : undefined;
-  const personendaten = verfahren ? await getPersonendaten(verfahren.nr) : undefined;
+  const zugriffErlaubt = id ? await istVerfahrenErreichbar(session, id) : false;
+  const verfahren = zugriffErlaubt && id ? await findVerfahren(id) : undefined;
   const showBackButton = session.role === "dlr" || session.role === "admin";
 
   return (
@@ -42,20 +40,17 @@ export default async function VerfahrensdatenPage({
                 <strong className="text-neutral-900">Verfahren:</strong> {verfahren.name}
               </p>
               <p>
-                <strong className="text-neutral-900">Aktenzeichen:</strong> {verfahren.aktenzeichen}
+                <strong className="text-neutral-900">Bezirksregierung:</strong> {verfahren.dienstsitz}
               </p>
-              <p>
-                <strong className="text-neutral-900">Landkreis:</strong> {verfahren.landkreis}
-              </p>
-              {personendaten && (
+              {verfahren.chairperson && (
                 <p>
                   <strong className="text-neutral-900">TG-Vorsitzender:</strong>
                   <br />
-                  {personendaten.vorsitzender.name}
+                  {verfahren.chairperson}
                   <br />
-                  {personendaten.vorsitzender.strasse}
+                  {verfahren.address}
                   <br />
-                  {personendaten.vorsitzender.plzOrt}
+                  {verfahren.postCode} {verfahren.city}
                 </p>
               )}
             </div>
@@ -66,19 +61,6 @@ export default async function VerfahrensdatenPage({
             >
               Zur Finanzübersicht
             </Link>
-
-            {personendaten?.koordinaten && (
-              <div className="mt-10 overflow-hidden rounded-lg border border-neutral-200">
-                <iframe
-                  title={`Standort ${verfahren.name}`}
-                  src={`https://maps.google.com/maps?q=${personendaten.koordinaten.lat},${personendaten.koordinaten.lng}&z=15&output=embed`}
-                  width="100%"
-                  height="400"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-            )}
           </>
         ) : id && !zugriffErlaubt ? (
           <p className="text-base leading-relaxed text-neutral-700">Kein Zugriff auf diese Daten.</p>

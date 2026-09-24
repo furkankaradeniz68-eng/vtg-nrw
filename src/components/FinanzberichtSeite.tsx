@@ -1,11 +1,11 @@
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import FinanzberichtTabelle from "@/components/FinanzberichtTabelle";
-import { findVerfahren, istVerfahrenErreichbar } from "@/lib/verfahren-beispieldaten";
-import { findeFinanzKategorie, type FinanzKategorieSlug } from "@/lib/finanzbericht-beispieldaten";
+import { findVerfahren, istVerfahrenErreichbar } from "@/lib/bc-companies";
+import { findeFinanzKategorie, KATEGORIE_INFO, type FinanzKategorieSlug } from "@/lib/bc-budget-lines";
 import type { SessionPayload } from "@/lib/auth";
 
-export default function FinanzberichtSeite({
+export default async function FinanzberichtSeite({
   kategorieSlug,
   ansicht,
   verfahrenId,
@@ -20,12 +20,14 @@ export default function FinanzberichtSeite({
   laufzeitHref: string;
   haushaltsjahrHref: string;
 }) {
-  const kategorie = findeFinanzKategorie(kategorieSlug, ansicht);
-  const zugriffErlaubt = verfahrenId ? istVerfahrenErreichbar(session, verfahrenId) : false;
-  const verfahren = zugriffErlaubt && verfahrenId ? findVerfahren(verfahrenId) : undefined;
+  const zugriffErlaubt = verfahrenId ? await istVerfahrenErreichbar(session, verfahrenId) : false;
+  const verfahren = zugriffErlaubt && verfahrenId ? await findVerfahren(verfahrenId) : undefined;
+  const kategorie = verfahren ? await findeFinanzKategorie(verfahren.nr, kategorieSlug, ansicht) : undefined;
   const ansichtLabel = ansicht === "laufzeit" ? "Laufzeit" : "Haushaltsjahr";
   const planLabel = ansicht === "laufzeit" ? "FinPL" : "Jahresprogramm";
-  const heroTitel = kategorie.suffix ? `${kategorie.titel}/${kategorie.suffix}` : kategorie.titel;
+  const info = KATEGORIE_INFO[kategorieSlug];
+  const titel = kategorie?.titel ?? info.titel;
+  const heroTitel = info.suffix ? `${info.titel}/${info.suffix}` : info.titel;
 
   return (
     <>
@@ -39,10 +41,10 @@ export default function FinanzberichtSeite({
         </Link>
 
         <h2 className="mb-4 font-heading text-2xl font-bold text-neutral-900">
-          {kategorie.titel} ({ansichtLabel})
+          {titel} ({ansichtLabel})
         </h2>
 
-        {verfahren ? (
+        {verfahren && kategorie ? (
           <>
             <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 text-sm text-neutral-700">
               <p>

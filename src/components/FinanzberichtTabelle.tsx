@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import type { FinanzZeile } from "@/lib/finanzbericht-beispieldaten";
+import type { FinanzZeile } from "@/lib/bc-budget-lines";
 
 function formatEuro(n: number) {
   return n.toLocaleString("de-DE", {

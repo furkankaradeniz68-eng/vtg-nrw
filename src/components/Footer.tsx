@@ -5,14 +5,8 @@ import { footerNav } from "@/lib/nav";
 export default function Footer() {
   const year = new Date().getFullYear();
 
-  // VTG NRW zeigt bewusst nur Startseite, Login/Mitgliederbereich sowie die
-  // Pflichtangaben nach TMG — der volle Webauftritt läuft ausschliesslich im
-  // separaten VTG-RLP-Projekt/Repo.
-  const serviceLinks = footerNav.service.filter((item) => item.href === "/");
-  const uebersichtLinks: typeof footerNav.uebersicht = [];
-  const legalLinks = footerNav.legal.filter(
-    (item) => item.href === "/impressum" || item.href === "/datenschutzerklaerung",
-  );
+  const serviceLinks = footerNav.service;
+  const legalLinks = footerNav.legal;
 
   return (
     <footer className="border-t-[1.5px] border-vtg-yellow bg-white text-neutral-800">
@@ -44,19 +38,6 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-
-            {uebersichtLinks.length > 0 && (
-              <ul className="flex flex-col gap-1.5 text-sm">
-                {uebersichtLinks.map((item) => (
-                  <li key={item.href} className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 shrink-0 bg-neutral-900" />
-                    <Link href={item.href} className="hover:text-vtg-orange">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
         </div>
 
