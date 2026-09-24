@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/api/cron/bc-sync",
-      "schedule": "15 11 * * *"
+      "schedule": "0 1 * * *"
     }
   ]
 }
