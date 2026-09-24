@@ -2,6 +2,7 @@ export type NavItem = {
   label: string;
   href: string;
   children?: NavItem[];
+  icon?: "download";
 };
 
 // Links to static files (PDF/ZIP/...) must use a plain <a>, not next/link's
@@ -23,24 +24,18 @@ export const header2Nav: Record<MemberRole, NavItem[]> = {
   abonnent: [
     { label: "Verfahrensdaten", href: "/mitgliederbereich/verfahrensdaten" },
     { label: "Finanzübersicht", href: "/mitgliederbereich/finanzuebersicht" },
-    { label: "Kontenübersicht", href: "/mitgliederbereich/kontenuebersicht" },
-    { label: "Kontoauszüge", href: "/mitgliederbereich/kontoauszuege" },
+    { label: "Kontenübersicht", href: "/mitgliederbereich/kontenuebersicht", icon: "download" },
+    { label: "Kontoauszüge", href: "/mitgliederbereich/kontoauszuege", icon: "download" },
     { label: "Offene Posten", href: "/mitgliederbereich/offene-posten" },
   ],
   intern: [
     { label: "Verfahrensauswahl", href: "/mitgliederbereich/verfahrensauswahl" },
     { label: "Verfahrensdaten", href: "/mitgliederbereich/verfahrensdaten" },
     { label: "Finanzübersicht", href: "/mitgliederbereich/finanzuebersicht" },
-    { label: "Kontenübersicht", href: "/mitgliederbereich/kontenuebersicht" },
-    { label: "Kontoauszüge", href: "/mitgliederbereich/kontoauszuege" },
-    { label: "TG-Einzeldaten (ZIP)", href: "/mitgliederbereich/tg-einzeldaten" },
+    { label: "Kontenübersicht", href: "/mitgliederbereich/kontenuebersicht", icon: "download" },
+    { label: "Kontoauszüge", href: "/mitgliederbereich/kontoauszuege", icon: "download" },
+    { label: "TG-Einzeldaten (ZIP)", href: "/mitgliederbereich/tg-einzeldaten", icon: "download" },
     { label: "Offene Posten", href: "/mitgliederbereich/offene-posten" },
-  ],
-};
-
-export const header2SecondRow: Partial<Record<MemberRole, NavItem[]>> = {
-  intern: [
-    { label: "Bewilligungs- und Abrufübersicht", href: "/mitgliederbereich/bewilligungs-und-abrufuebersicht" },
   ],
 };
 
