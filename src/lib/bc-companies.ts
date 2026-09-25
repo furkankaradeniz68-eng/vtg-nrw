@@ -8,7 +8,7 @@
 import { cache } from "react";
 import { get } from "@vercel/blob";
 import { BLOB_TOKEN } from "@/lib/blob-token";
-import { COMPANIES_PATHNAME } from "@/lib/bc-sync";
+import { COMPANIES_PATHNAME, LAST_SYNC_PATHNAME, type BcSyncResult } from "@/lib/bc-sync";
 import type { BcCompany } from "@/lib/bc-types";
 import type { SessionRole } from "@/lib/auth";
 import { getLatestFinancialYear } from "@/lib/bc-budget-lines";
@@ -57,12 +57,27 @@ const loadCompanies = cache(async (): Promise<BcCompany[]> => {
   return JSON.parse(text) as BcCompany[];
 });
 
-function formatStand(snapshotDateTime: string): string {
-  const d = new Date(snapshotDateTime);
-  if (Number.isNaN(d.getTime())) return snapshotDateTime;
+export function formatDateTime(dateTime: string): string {
+  const d = new Date(dateTime);
+  if (Number.isNaN(d.getTime())) return dateTime;
   const datePart = d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Berlin" });
   const timePart = d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" });
   return `${datePart} ${timePart}`;
+}
+
+// Wird direkt aus dem Blob gelesen statt aus den Vercel Runtime-Logs, weil
+// deren Aufbewahrung (Hobby-Plan) nur ca. 1 Stunde zurueckreicht - damit
+// laesst sich im Admin-Dashboard jederzeit pruefen, ob der naechtliche Sync
+// tatsaechlich gelaufen ist.
+const loadLastSync = cache(async (): Promise<BcSyncResult | null> => {
+  const result = await get(LAST_SYNC_PATHNAME, { access: "private", token: BLOB_TOKEN }).catch(() => null);
+  if (!result || result.statusCode !== 200) return null;
+  const text = await new Response(result.stream).text();
+  return JSON.parse(text) as BcSyncResult;
+});
+
+export async function getLastSync(): Promise<BcSyncResult | null> {
+  return loadLastSync();
 }
 
 async function toVerfahren(company: BcCompany): Promise<Verfahren> {
@@ -78,7 +93,7 @@ async function toVerfahren(company: BcCompany): Promise<Verfahren> {
     aktenzeichen: "",
     landkreis: "",
     hj,
-    stand: formatStand(company.snapshotDateTime),
+    stand: formatDateTime(company.snapshotDateTime),
     chairperson: company.chairperson,
     address: company.address,
     postCode: company.postCode,

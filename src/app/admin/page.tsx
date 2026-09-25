@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import SimpleTable from "@/components/SimpleTable";
 import VerfahrenSearchSelect from "@/components/VerfahrenSearchSelect";
-import { getAllVerfahren } from "@/lib/bc-companies";
+import { getAllVerfahren, getLastSync, formatDateTime } from "@/lib/bc-companies";
 import { getAllDownloads, type DownloadCategory } from "@/lib/verfahren-downloads";
 
 export const metadata: Metadata = { title: "Admin-Dashboard | VTG Nordrhein-Westfalen" };
@@ -20,12 +20,17 @@ function formatDate(iso: string): string {
 }
 
 export default async function AdminDashboardPage() {
-  const [verfahren, downloads] = await Promise.all([getAllVerfahren(), getAllDownloads()]);
+  const [verfahren, downloads, lastSync] = await Promise.all([getAllVerfahren(), getAllDownloads(), getLastSync()]);
   const verfahrenOptions = verfahren.map((v) => ({ nr: v.nr, name: v.name, dienstsitz: v.dienstsitz }));
   const verfahrenName = Object.fromEntries(verfahren.map((v) => [v.nr, v.name]));
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+      <p className="mb-8 text-sm text-neutral-600">
+        Letzter erfolgreicher BC-Sync:{" "}
+        {lastSync ? `${formatDateTime(lastSync.syncedAt)} Uhr (${lastSync.companies} Verfahren)` : "noch nicht ausgeführt"}
+      </p>
+
       <h2 className="mb-4 font-heading text-lg font-bold text-neutral-900">Neue Datei zuweisen</h2>
       <form
         action="/api/verfahren-downloads/upload"

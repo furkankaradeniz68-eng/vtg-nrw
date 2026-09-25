@@ -9,6 +9,7 @@ import type { BcCompany, BcBudgetLine } from "@/lib/bc-types";
 
 export const COMPANIES_PATHNAME = "bc/vtgCompanies.json";
 export const BUDGET_LINES_PATHNAME = "bc/vtgBudgetLines.json";
+export const LAST_SYNC_PATHNAME = "bc/last-sync.json";
 
 async function saveSnapshot(pathname: string, data: unknown): Promise<void> {
   await put(pathname, JSON.stringify(data), {
@@ -28,7 +29,17 @@ export async function syncBc(): Promise<BcSyncResult> {
     fetchBcEntityAllPages<BcBudgetLine>("vtgBudgetLines"),
   ]);
 
-  await Promise.all([saveSnapshot(COMPANIES_PATHNAME, companies), saveSnapshot(BUDGET_LINES_PATHNAME, budgetLines)]);
+  const result: BcSyncResult = {
+    companies: companies.length,
+    budgetLines: budgetLines.length,
+    syncedAt: new Date().toISOString(),
+  };
 
-  return { companies: companies.length, budgetLines: budgetLines.length, syncedAt: new Date().toISOString() };
+  await Promise.all([
+    saveSnapshot(COMPANIES_PATHNAME, companies),
+    saveSnapshot(BUDGET_LINES_PATHNAME, budgetLines),
+    saveSnapshot(LAST_SYNC_PATHNAME, result),
+  ]);
+
+  return result;
 }
