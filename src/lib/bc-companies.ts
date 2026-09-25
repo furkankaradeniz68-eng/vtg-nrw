@@ -60,7 +60,9 @@ const loadCompanies = cache(async (): Promise<BcCompany[]> => {
 function formatStand(snapshotDateTime: string): string {
   const d = new Date(snapshotDateTime);
   if (Number.isNaN(d.getTime())) return snapshotDateTime;
-  return d.toLocaleDateString("de-DE");
+  const datePart = d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Berlin" });
+  const timePart = d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" });
+  return `${datePart} ${timePart}`;
 }
 
 async function toVerfahren(company: BcCompany): Promise<Verfahren> {
