@@ -24,7 +24,6 @@ export const header2Nav: Record<MemberRole, NavItem[]> = {
   abonnent: [
     { label: "Verfahrensdaten", href: "/mitgliederbereich/verfahrensdaten" },
     { label: "Finanzübersicht", href: "/mitgliederbereich/finanzuebersicht" },
-    { label: "Kontenübersicht", href: "/mitgliederbereich/kontenuebersicht", icon: "download" },
     { label: "Kontoauszüge", href: "/mitgliederbereich/kontoauszuege", icon: "download" },
     { label: "Offene Posten", href: "/mitgliederbereich/offene-posten" },
   ],
@@ -32,9 +31,7 @@ export const header2Nav: Record<MemberRole, NavItem[]> = {
     { label: "Verfahrensauswahl", href: "/mitgliederbereich/verfahrensauswahl" },
     { label: "Verfahrensdaten", href: "/mitgliederbereich/verfahrensdaten" },
     { label: "Finanzübersicht", href: "/mitgliederbereich/finanzuebersicht" },
-    { label: "Kontenübersicht", href: "/mitgliederbereich/kontenuebersicht", icon: "download" },
     { label: "Kontoauszüge", href: "/mitgliederbereich/kontoauszuege", icon: "download" },
-    { label: "TG-Einzeldaten (ZIP)", href: "/mitgliederbereich/tg-einzeldaten", icon: "download" },
     { label: "Offene Posten", href: "/mitgliederbereich/offene-posten" },
   ],
 };
