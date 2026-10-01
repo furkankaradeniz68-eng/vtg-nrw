@@ -55,12 +55,22 @@ export default async function VerfahrensdatenPage({
               )}
             </div>
 
-            <Link
-              href={`/mitgliederbereich/finanzuebersicht?id=${verfahren.nr}`}
-              className="mt-6 inline-block bg-vtg-yellow px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-vtg-orange hover:text-white"
-            >
-              Zur Finanzübersicht
-            </Link>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href={`/mitgliederbereich/finanzuebersicht?id=${verfahren.nr}`}
+                className="inline-block bg-vtg-yellow px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-vtg-orange hover:text-white"
+              >
+                Zur Finanzübersicht
+              </Link>
+              {(session.role === "dlr" || session.role === "admin") && (
+                <a
+                  href={`/api/tg-einzeldaten/${verfahren.nr}`}
+                  className="inline-block border border-vtg-orange px-4 py-2 text-sm font-medium text-vtg-orange hover:bg-vtg-orange hover:text-white"
+                >
+                  TG-Einzeldaten herunterladen
+                </a>
+              )}
+            </div>
           </>
         ) : id && !zugriffErlaubt ? (
           <p className="text-base leading-relaxed text-neutral-700">Kein Zugriff auf diese Daten.</p>
