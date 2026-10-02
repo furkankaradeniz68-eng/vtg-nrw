@@ -56,6 +56,57 @@ async function getToken(): Promise<string> {
   return cachedToken.accessToken;
 }
 
+type TgExportFileEntry = {
+  filename: string;
+  snapshotDateTime: string;
+  generationId?: string;
+  "content@odata.mediaReadLink": string;
+};
+
+export type BcExportFile = {
+  filename: string;
+  snapshotDateTime: string;
+  generationId?: string;
+  buffer: ArrayBuffer;
+};
+
+// Holt eine Datei aus der BC-Entity "tgExportFiles" (naechtlicher TG-
+// Einzeldaten-Export) ueber einen OData-$filter. Erster Request liefert nur
+// Metadaten + Downloadlink (content@odata.mediaReadLink), zweiter Request
+// (gleiches Token) liefert die eigentlichen Binaerdaten - siehe Anleitung von
+// Erik (BC-Entwicklung, 2026) zur neuen tgExportFiles-Schnittstelle, die fuer
+// RLP und NRW gleichermassen freigegeben wurde. Der $filter ist hier immer so
+// gebaut, dass genau ein aktueller Datensatz zurueckkommt, Paging ueber
+// @odata.nextLink ist fuer diesen Anwendungsfall daher nicht noetig.
+export async function fetchBcExportFile(filter: string): Promise<BcExportFile | null> {
+  const token = await getToken();
+  const url = `${BC_NRW_BASE_URL}/tgExportFiles?${new URLSearchParams({ $filter: filter }).toString()}`;
+
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) {
+    console.error(`BC-Abfrage fehlgeschlagen (tgExportFiles): ${res.status} ${await res.text()}`);
+    throw new Error(`BC-Abfrage fehlgeschlagen (tgExportFiles): HTTP ${res.status} (Details im Server-Log)`);
+  }
+  const data = (await res.json()) as { value: TgExportFileEntry[] };
+  const entry = data.value[0];
+  if (!entry) return null;
+
+  const mediaRes = await fetch(entry["content@odata.mediaReadLink"], {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!mediaRes.ok) {
+    console.error(`BC-Dateiabruf fehlgeschlagen (tgExportFiles): ${mediaRes.status} ${await mediaRes.text()}`);
+    throw new Error(`BC-Dateiabruf fehlgeschlagen (tgExportFiles): HTTP ${mediaRes.status} (Details im Server-Log)`);
+  }
+
+  return {
+    filename: entry.filename,
+    snapshotDateTime: entry.snapshotDateTime,
+    generationId: entry.generationId,
+    buffer: await mediaRes.arrayBuffer(),
+  };
+}
+
 type ODataResponse<T> = { value: T[]; "@odata.nextLink"?: string };
 
 // Liest eine BC-Entity vollstaendig aus, inkl. Paging ueber @odata.nextLink
