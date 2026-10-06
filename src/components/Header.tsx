@@ -182,14 +182,14 @@ export default function Header({
     <header className="sticky top-0 z-50 border-b-[1.5px] border-vtg-yellow bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4 py-2">
-          <Link href="/" className="shrink-0" aria-label="VTG Rheinland-Pfalz Startseite">
+          <Link href="/" className="shrink-0" aria-label="VTG Nordrhein-Westfalen Startseite">
             <Image
-              src="/images/logo/vtg-schrift.png"
-              alt="VTG Rheinland-Pfalz Logo"
-              width={4006}
-              height={1558}
+              src="/images/logo/vtg-nrw-logo.png"
+              alt="VTG Nordrhein-Westfalen Logo"
+              width={1254}
+              height={1254}
               priority
-              className="h-7 w-auto object-contain md:h-9 lg:h-24"
+              className="h-12 w-auto object-contain md:h-14 lg:h-24"
             />
           </Link>
 
