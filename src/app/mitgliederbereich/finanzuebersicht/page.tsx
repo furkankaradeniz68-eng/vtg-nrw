@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/auth";
 import { findVerfahren, istVerfahrenErreichbar } from "@/lib/bc-companies";
 import {
   gesamtsummeFuerKategorie,
+  getBudgetLinesForCompany,
   getFinanzUebersichtKennzahlen,
   type FinanzKategorieSlug,
 } from "@/lib/bc-budget-lines";
@@ -39,12 +40,19 @@ export default async function FinanzuebersichtPage({
   const id = rawId ?? (session.role === "abonnent" ? session.username : undefined);
   const zugriffErlaubt = id ? await istVerfahrenErreichbar(session, id) : false;
   const verfahren = zugriffErlaubt && id ? await findVerfahren(id) : undefined;
-  const k = verfahren ? await getFinanzUebersichtKennzahlen(verfahren.nr) : undefined;
+  // Budget-Lines-Zeilen fuer dieses Verfahren einmal laden und an Kennzahlen
+  // + alle drei Kategorie-Summen durchreichen, statt dass jede der vier
+  // Funktionen den kompletten Blob separat neu abruft (1:1 aus vtg-rlp
+  // uebernommen, siehe dortigen N+1-Ausfall 2026-09-29 — diese Seite war mit
+  // bis zu ~14 redundanten Blob-Fetches pro Aufruf der bisher schlimmste Fall).
+  const rows = verfahren ? await getBudgetLinesForCompany(verfahren.nr) : [];
+  const k = verfahren ? await getFinanzUebersichtKennzahlen(verfahren.nr, rows) : undefined;
   const gesamtsummen: Partial<Record<FinanzKategorieSlug, number>> = verfahren
     ? Object.fromEntries(
         await Promise.all(
           berichte.map(
-            async (b) => [b.kategorieSlug, await gesamtsummeFuerKategorie(verfahren.nr, b.kategorieSlug)] as const,
+            async (b) =>
+              [b.kategorieSlug, await gesamtsummeFuerKategorie(verfahren.nr, b.kategorieSlug, rows)] as const,
           ),
         ),
       )
@@ -108,10 +116,10 @@ export default async function FinanzuebersichtPage({
 
             <ul className="mt-8 flex flex-col gap-2">
               {berichte.map((bericht) => (
-                <li key={bericht.href}>
+                <li key={bericht.href} className="flex items-stretch gap-2">
                   <Link
                     href={`/mitgliederbereich/${bericht.href}?id=${verfahren.nr}`}
-                    className="flex overflow-hidden text-sm font-medium transition hover:brightness-95"
+                    className="flex flex-1 overflow-hidden text-sm font-medium transition hover:brightness-95"
                   >
                     <span className="flex-1 bg-vtg-yellow px-4 py-2.5 text-neutral-900">
                       {bericht.titel}:
@@ -120,6 +128,28 @@ export default async function FinanzuebersichtPage({
                       {formatEuro(gesamtsummen[bericht.kategorieSlug] ?? 0)}
                     </span>
                   </Link>
+                  <a
+                    href={`/api/finanzbericht/pdf?id=${verfahren.nr}&kategorie=${bericht.kategorieSlug}&ansicht=haushaltsjahr`}
+                    title="Als PDF herunterladen"
+                    aria-label={`${bericht.titel} als PDF herunterladen`}
+                    className="flex shrink-0 items-center justify-center border border-neutral-200 bg-neutral-50 px-3 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 3v12" />
+                      <path d="m7 10 5 5 5-5" />
+                      <path d="M5 21h14" />
+                    </svg>
+                  </a>
                 </li>
               ))}
             </ul>

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
-import FinanzberichtTabelle from "@/components/FinanzberichtTabelle";
+import FinanzberichtDownloadTabelle from "@/components/FinanzberichtDownloadTabelle";
 import { findVerfahren, istVerfahrenErreichbar } from "@/lib/bc-companies";
-import { findeFinanzKategorie, KATEGORIE_INFO, type FinanzKategorieSlug } from "@/lib/bc-budget-lines";
+import { findeFinanzDownloadKategorie, KATEGORIE_INFO, type FinanzKategorieSlug } from "@/lib/bc-budget-lines";
 import type { SessionPayload } from "@/lib/auth";
 
 export default async function FinanzberichtSeite({
@@ -22,7 +22,7 @@ export default async function FinanzberichtSeite({
 }) {
   const zugriffErlaubt = verfahrenId ? await istVerfahrenErreichbar(session, verfahrenId) : false;
   const verfahren = zugriffErlaubt && verfahrenId ? await findVerfahren(verfahrenId) : undefined;
-  const kategorie = verfahren ? await findeFinanzKategorie(verfahren.nr, kategorieSlug, ansicht) : undefined;
+  const kategorie = verfahren ? await findeFinanzDownloadKategorie(verfahren.nr, kategorieSlug) : undefined;
   const ansichtLabel = ansicht === "laufzeit" ? "Laufzeit" : "Haushaltsjahr";
   const planLabel = ansicht === "laufzeit" ? "FinPL" : "Jahresprogramm";
   const info = KATEGORIE_INFO[kategorieSlug];
@@ -71,7 +71,12 @@ export default async function FinanzberichtSeite({
                 </>
               )}
             </p>
-            <FinanzberichtTabelle planLabel={planLabel} zeilen={kategorie.zeilen} />
+            <FinanzberichtDownloadTabelle
+              planLabel={planLabel}
+              ansicht={ansicht}
+              vollSpalten={kategorie.vollSpalten}
+              zeilen={kategorie.zeilen}
+            />
           </>
         ) : verfahrenId && !zugriffErlaubt ? (
           <p className="text-base leading-relaxed text-neutral-700">Kein Zugriff auf diese Daten.</p>
