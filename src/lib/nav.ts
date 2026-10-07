@@ -24,14 +24,12 @@ export const header2Nav: Record<MemberRole, NavItem[]> = {
   abonnent: [
     { label: "Verfahrensdaten", href: "/mitgliederbereich/verfahrensdaten" },
     { label: "Finanzübersicht", href: "/mitgliederbereich/finanzuebersicht" },
-    { label: "Kontoauszüge", href: "/mitgliederbereich/kontoauszuege", icon: "download" },
     { label: "Offene Posten", href: "/mitgliederbereich/offene-posten" },
   ],
   intern: [
     { label: "Verfahrensauswahl", href: "/mitgliederbereich/verfahrensauswahl" },
     { label: "Verfahrensdaten", href: "/mitgliederbereich/verfahrensdaten" },
     { label: "Finanzübersicht", href: "/mitgliederbereich/finanzuebersicht" },
-    { label: "Kontoauszüge", href: "/mitgliederbereich/kontoauszuege", icon: "download" },
     { label: "Offene Posten", href: "/mitgliederbereich/offene-posten" },
   ],
 };

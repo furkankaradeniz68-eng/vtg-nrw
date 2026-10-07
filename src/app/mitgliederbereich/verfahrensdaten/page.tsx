@@ -62,6 +62,12 @@ export default async function VerfahrensdatenPage({
               >
                 Zur Finanzübersicht
               </Link>
+              <Link
+                href={`/mitgliederbereich/kontoauszuege?id=${verfahren.nr}`}
+                className="inline-block border border-vtg-orange px-4 py-2 text-sm font-medium text-vtg-orange hover:bg-vtg-orange hover:text-white"
+              >
+                Kontoauszüge
+              </Link>
               {(session.role === "dlr" || session.role === "admin") && (
                 <a
                   href={`/api/tg-einzeldaten/${verfahren.nr}`}

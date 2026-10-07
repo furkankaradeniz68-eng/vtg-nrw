@@ -14,11 +14,11 @@ export default function Footer() {
         <div className="flex flex-col flex-wrap border-b border-neutral-200 pb-8 sm:flex-row sm:items-start">
           <div className="border-neutral-200 py-4 pr-8 sm:w-[35%] sm:border-b-0">
             <Image
-              src="/images/logo/vtg-nrw-logo.png"
+              src="/images/logo/vtg-nrw-logo-v2.png"
               alt="VTG Nordrhein-Westfalen Logo"
-              width={1254}
-              height={1254}
-              className="h-[107px] w-auto object-contain"
+              width={2000}
+              height={778}
+              className="h-16 w-[165px] object-contain"
             />
             <p className="mt-4 text-sm text-neutral-600">
               Verband der Teilnehmergemeinschaften Rheinland-Pfalz.

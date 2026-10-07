@@ -20,7 +20,7 @@ export default function HomePage() {
             Herzlich willkommen beim VTG!
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-neutral-100">
-            Gemeinsam für geordnete Bodenentwicklung in Rheinland-Pfalz.
+            Ihr Kassenwesen für Nordrhein-Westfalen.
           </p>
         </div>
       </section>
