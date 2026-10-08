@@ -23,12 +23,10 @@ export type MemberRole = "abonnent" | "intern";
 export const header2Nav: Record<MemberRole, NavItem[]> = {
   abonnent: [
     { label: "Verfahrensdaten", href: "/mitgliederbereich/verfahrensdaten" },
-    { label: "Finanzübersicht", href: "/mitgliederbereich/finanzuebersicht" },
   ],
   intern: [
     { label: "Verfahrensauswahl", href: "/mitgliederbereich/verfahrensauswahl" },
     { label: "Verfahrensdaten", href: "/mitgliederbereich/verfahrensdaten" },
-    { label: "Finanzübersicht", href: "/mitgliederbereich/finanzuebersicht" },
   ],
 };
 
