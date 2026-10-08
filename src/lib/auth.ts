@@ -11,7 +11,20 @@ export type SessionPayload = {
 };
 
 export const SESSION_COOKIE_NAME = "vtg_session";
-export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 Tage
+// Inaktivitaets-Timeout: Die Session laeuft 60 Minuten nach der LETZTEN Anfrage
+// ab (gleitend) - nicht mehr absolut nach 7 Tagen. Verlaengert wird sie in
+// src/proxy.ts bei jeder Anfrage, Server Components koennen keine Cookies setzen.
+export const SESSION_IDLE_TIMEOUT_SECONDS = 60 * 60;
+
+export function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: SESSION_IDLE_TIMEOUT_SECONDS,
+  };
+}
 
 function getSecret(): string {
   const secret = process.env.SESSION_SECRET;
