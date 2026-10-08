@@ -76,6 +76,14 @@ export default async function VerfahrensdatenPage({
                   TG-Einzeldaten herunterladen
                 </a>
               )}
+              {(session.role === "dlr" || session.role === "admin") && (
+                <a
+                  href={`/api/offene-posten/${verfahren.nr}`}
+                  className="inline-block border border-vtg-orange px-4 py-2 text-sm font-medium text-vtg-orange hover:bg-vtg-orange hover:text-white"
+                >
+                  Offene Posten herunterladen
+                </a>
+              )}
             </div>
           </>
         ) : id && !zugriffErlaubt ? (
