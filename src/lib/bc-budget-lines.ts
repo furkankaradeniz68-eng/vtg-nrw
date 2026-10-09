@@ -7,13 +7,16 @@
 //   Ausfuehrungskosten/A1        -> 411xxx - 416xxx
 //   Sonstige Ausfuehrungskosten/A2 -> 422xx - 425xx
 //   Einnahmen                    -> alle Konten, die mit "8" beginnen (811xx-891xx)
-// Die Bilanzkonten (0730-1890) fuer die Finanzuebersicht-Kennzahlen
-// (Kontostand/Forderungen/Vermoegen) sind wie bei RLP NICHT Teil der von BC
-// gelieferten Feldspezifikation - bestmoeglicher Ableitungsversuch, sollte
-// mit der Buchhaltung validiert werden, bevor produktiv angezeigt (anders
-// als bei RLP ist diese Formel fuer NRW NOCH NICHT vor Ort mit dem Kunden
-// abgeglichen - siehe getFinanzUebersichtKennzahlen weiter unten, bewusst
-// NICHT auf die RLP-Formel umgestellt).
+// Die Bilanzkonten-Formel fuer die Finanzuebersicht-Kennzahlen (Kontostand/
+// Forderungen-Verbindlichkeiten/Vermoegen der TG) ist seit 2026-10-09 fuer RLP
+// und NRW identisch (Kundenwunsch: gilt fuer jede Finanzuebersicht); sie wurde
+// am 2026-10-07 mit dem Kunden vor Ort fuer RLP validiert, 1401 kam am
+// 2026-10-09 dazu:
+//   Kontostand                     = Saldo(1200)
+//   Forderungen/Verbindlichkeiten  = Saldo(1400) + Saldo(1401) + Saldo(1590)
+//   Forderungen/Verbindlichkeiten BD = Saldo(1591)
+//   Vermoegen der TG               = Kontostand + Forderungen/Verbindlichkeiten
+//                                     + Forderungen/Verbindlichkeiten BD
 //
 // Download-Berichte (findeFinanzDownloadKategorie), PDF-Generierung
 // (finanzbericht-pdf.ts) und die Einnahmen-Vorzeichen-Logik sind 2026-10-07
@@ -589,13 +592,10 @@ export type FinanzUebersichtKennzahlen = {
   vermoegenDerTG: number;
 };
 
-const BILANZKONTEN = ["0730", "0800", "1000", "1200", "1360", "1400", "1500", "1590", "1600", "1800", "1890"];
-
-// ACHTUNG: diese Formel ist (anders als bei RLP) noch NICHT mit der
-// Buchhaltung/dem Kunden vor Ort validiert — bestmoeglicher Ableitungsversuch
-// aus der Bilanzkonten-Liste, bewusst NICHT auf die fuer RLP validierte
-// Formel (Saldo(1200)/Saldo(1400)+Saldo(1590)/Saldo(1591)) umgestellt, da
-// unklar ist, ob NRW dieselben Kontonummern fuer dieselben Zwecke nutzt.
+// Formel identisch zu vtg-rlp/src/lib/bc-budget-lines.ts. 1401 ("Forderungen
+// Nichtmitglieder") gehoert dazu, weil Forderungen bei manchen Verfahren
+// komplett dort stehen, waehrend 1400 ("Forderungen Mitglieder") und 1590 in
+// BC 0 sind - die Kachel zeigte dann faelschlich immer 0,00.
 export async function getFinanzUebersichtKennzahlen(
   nr: string,
   vorgeladeneRows?: BcBudgetLine[],
@@ -608,16 +608,14 @@ export async function getFinanzUebersichtKennzahlen(
     aktuelleRows.filter((r) => r.glAccountNo === konto).reduce((sum, r) => sum + r.balance, 0);
 
   const kontostand = saldoVon("1200");
-  const forderungenVerbindlichkeiten = saldoVon("1400") - saldoVon("1600");
-  const vermoegenDerTG = BILANZKONTEN.reduce((sum, konto) => sum + saldoVon(konto), 0);
+  const forderungenVerbindlichkeiten = saldoVon("1400") + saldoVon("1401") + saldoVon("1590");
+  const forderungenVerbindlichkeitenBD = saldoVon("1591");
+  const vermoegenDerTG = kontostand + forderungenVerbindlichkeiten + forderungenVerbindlichkeitenBD;
 
   return {
     kontostand,
     forderungenVerbindlichkeiten,
-    // "BD" ist in der BC-Feldspezifikation nicht erklaert und laesst sich aus
-    // der reinen Sachkonto-Liste nicht sicher ableiten — vorlaeufig 0, bis
-    // BC-Entwicklung (Umut) das Konto/die Dimension dafuer benennt.
-    forderungenVerbindlichkeitenBD: 0,
+    forderungenVerbindlichkeitenBD,
     vermoegenDerTG,
   };
 }
