@@ -8,16 +8,15 @@
 //   Sonstige Ausfuehrungskosten/A2 -> 422xx - 425xx
 //   Einnahmen                    -> alle Konten, die mit "8" beginnen (811xx-891xx)
 // Die Bilanzkonten-Formel fuer die Finanzuebersicht-Kennzahlen (Kontostand/
-// Forderungen-Verbindlichkeiten/Vermoegen der TG) ist seit 2026-10-09 fuer RLP
-// und NRW identisch (Kundenwunsch: gilt fuer jede Finanzuebersicht); sie wurde
-// am 2026-10-07 mit dem Kunden vor Ort fuer RLP validiert, 1401/1600/1601
-// kamen am 2026-10-09 dazu:
-//   Kontostand                     = Saldo(1200)
-//   Forderungen/Verbindlichkeiten  = Saldo(1400) + Saldo(1401) + Saldo(1590)
-//                                    + Saldo(1600) + Saldo(1601)
+// Forderungen-Verbindlichkeiten/Vermoegen der TG) ist fuer RLP und NRW
+// identisch (Kundenwunsch: gilt fuer jede Finanzuebersicht) und wurde am
+// 2026-10-09 anhand eines Vergleichs mit der alten vtg-rlp.de (Verfahren
+// 11125, auf den Cent nachgerechnet) so festgelegt:
+//   Kontostand                       = Saldo(1200)
 //   Forderungen/Verbindlichkeiten BD = Saldo(1591)
-//   Vermoegen der TG               = Kontostand + Forderungen/Verbindlichkeiten
-//                                     + Forderungen/Verbindlichkeiten BD
+//   Vermoegen der TG                 = Summe ALLER Bilanzkonten (0xxx/1xxx)
+//   Forderungen/Verbindlichkeiten    = Vermoegen - Kontostand - BD
+// Siehe vtg-rlp/src/lib/bc-budget-lines.ts fuer die ausfuehrliche Begruendung.
 //
 // Download-Berichte (findeFinanzDownloadKategorie), PDF-Generierung
 // (finanzbericht-pdf.ts) und die Einnahmen-Vorzeichen-Logik sind 2026-10-07
@@ -593,8 +592,7 @@ export type FinanzUebersichtKennzahlen = {
   vermoegenDerTG: number;
 };
 
-// Formel identisch zu vtg-rlp/src/lib/bc-budget-lines.ts (dort mit Begruendung
-// fuer 1401 und die Verbindlichkeiten 1600/1601).
+// Formel identisch zu vtg-rlp/src/lib/bc-budget-lines.ts (dort mit Begruendung).
 export async function getFinanzUebersichtKennzahlen(
   nr: string,
   vorgeladeneRows?: BcBudgetLine[],
@@ -606,11 +604,13 @@ export async function getFinanzUebersichtKennzahlen(
   const saldoVon = (konto: string) =>
     aktuelleRows.filter((r) => r.glAccountNo === konto).reduce((sum, r) => sum + r.balance, 0);
 
+  // Bilanzkonten = alle 4-stelligen Konten, die mit 0 oder 1 beginnen (siehe RLP).
+  const vermoegenDerTG = aktuelleRows
+    .filter((r) => /^[01]/.test(r.glAccountNo))
+    .reduce((sum, r) => sum + r.balance, 0);
   const kontostand = saldoVon("1200");
-  const forderungenVerbindlichkeiten =
-    saldoVon("1400") + saldoVon("1401") + saldoVon("1590") + saldoVon("1600") + saldoVon("1601");
   const forderungenVerbindlichkeitenBD = saldoVon("1591");
-  const vermoegenDerTG = kontostand + forderungenVerbindlichkeiten + forderungenVerbindlichkeitenBD;
+  const forderungenVerbindlichkeiten = vermoegenDerTG - kontostand - forderungenVerbindlichkeitenBD;
 
   return {
     kontostand,
