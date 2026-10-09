@@ -10,10 +10,11 @@
 // Die Bilanzkonten-Formel fuer die Finanzuebersicht-Kennzahlen (Kontostand/
 // Forderungen-Verbindlichkeiten/Vermoegen der TG) ist seit 2026-10-09 fuer RLP
 // und NRW identisch (Kundenwunsch: gilt fuer jede Finanzuebersicht); sie wurde
-// am 2026-10-07 mit dem Kunden vor Ort fuer RLP validiert, 1401 kam am
-// 2026-10-09 dazu:
+// am 2026-10-07 mit dem Kunden vor Ort fuer RLP validiert, 1401/1600/1601
+// kamen am 2026-10-09 dazu:
 //   Kontostand                     = Saldo(1200)
 //   Forderungen/Verbindlichkeiten  = Saldo(1400) + Saldo(1401) + Saldo(1590)
+//                                    + Saldo(1600) + Saldo(1601)
 //   Forderungen/Verbindlichkeiten BD = Saldo(1591)
 //   Vermoegen der TG               = Kontostand + Forderungen/Verbindlichkeiten
 //                                     + Forderungen/Verbindlichkeiten BD
@@ -592,10 +593,8 @@ export type FinanzUebersichtKennzahlen = {
   vermoegenDerTG: number;
 };
 
-// Formel identisch zu vtg-rlp/src/lib/bc-budget-lines.ts. 1401 ("Forderungen
-// Nichtmitglieder") gehoert dazu, weil Forderungen bei manchen Verfahren
-// komplett dort stehen, waehrend 1400 ("Forderungen Mitglieder") und 1590 in
-// BC 0 sind - die Kachel zeigte dann faelschlich immer 0,00.
+// Formel identisch zu vtg-rlp/src/lib/bc-budget-lines.ts (dort mit Begruendung
+// fuer 1401 und die Verbindlichkeiten 1600/1601).
 export async function getFinanzUebersichtKennzahlen(
   nr: string,
   vorgeladeneRows?: BcBudgetLine[],
@@ -608,7 +607,8 @@ export async function getFinanzUebersichtKennzahlen(
     aktuelleRows.filter((r) => r.glAccountNo === konto).reduce((sum, r) => sum + r.balance, 0);
 
   const kontostand = saldoVon("1200");
-  const forderungenVerbindlichkeiten = saldoVon("1400") + saldoVon("1401") + saldoVon("1590");
+  const forderungenVerbindlichkeiten =
+    saldoVon("1400") + saldoVon("1401") + saldoVon("1590") + saldoVon("1600") + saldoVon("1601");
   const forderungenVerbindlichkeitenBD = saldoVon("1591");
   const vermoegenDerTG = kontostand + forderungenVerbindlichkeiten + forderungenVerbindlichkeitenBD;
 
