@@ -448,6 +448,10 @@ export async function findeFinanzDownloadKategorie(
       }
     }
 
+    // Kundenwunsch (2026-10-12): Summenzeile UNTER den Positionen (erst z.B.
+    // 41110, darunter "Summe 411") - in HTML-Bericht und PDF.
+    zeilen.push(...positionsZeilen);
+
     if (vollSpalten) {
       const nzL = gruppenRows.reduce((summe, row) => summe + nichtZuFaehigL(row), 0);
       const nzHj = gruppenRows.reduce((summe, row) => summe + nichtZuFaehigHj(row), 0);
@@ -468,7 +472,6 @@ export async function findeFinanzDownloadKategorie(
     } else {
       zeilen.push({ konto: `Summe ${schluessel}`, typ: "gruppe", laufzeit: leereSpalten(gL), haushaltsjahr: leereSpalten(gHj) });
     }
-    zeilen.push(...positionsZeilen);
 
     gesamtAusgabenL += gL;
     gesamtPlanL += pL;

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { contentDisposition } from "@/lib/content-disposition";
 import { requireSession } from "@/lib/auth";
 import { istVerfahrenErreichbar } from "@/lib/bc-companies";
 import { fetchBcExportFile } from "@/lib/bc-client";
@@ -45,7 +46,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ nr: 
   return new NextResponse(new Blob([file.buffer]), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="${file.filename.replace(/"/g, "")}"`,
+      "Content-Disposition": contentDisposition(file.filename),
       "Cache-Control": "no-store",
     },
   });

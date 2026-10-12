@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { contentDisposition } from "@/lib/content-disposition";
 import { requireSession } from "@/lib/auth";
 import { findVerfahren, istVerfahrenErreichbar } from "@/lib/bc-companies";
 import {
@@ -38,7 +39,7 @@ export async function GET(request: Request) {
   return new NextResponse(new Blob([new Uint8Array(pdfBytes)]), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${dateiname}"`,
+      "Content-Disposition": contentDisposition(dateiname),
     },
   });
 }

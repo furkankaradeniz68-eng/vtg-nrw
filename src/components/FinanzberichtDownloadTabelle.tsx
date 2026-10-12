@@ -21,16 +21,21 @@ function formatProzent(n: number | null) {
 
 type Sektion = { gruppe: FinanzDownloadZeile; kinder: FinanzDownloadZeile[] };
 
+// Reihenfolge der Zeilen: erst die Positionen (z.B. 41110), danach die zugehoerige
+// Summenzeile (typ "gruppe", z.B. "Summe 411") - Kundenwunsch 2026-10-12. Die
+// gesammelten Positionen gehoeren deshalb zur NAECHSTEN Summenzeile.
 function gruppiere(zeilen: readonly FinanzDownloadZeile[]) {
   const sektionen: Sektion[] = [];
   const fussZeilen: FinanzDownloadZeile[] = [];
+  let kinder: FinanzDownloadZeile[] = [];
   for (const zeile of zeilen) {
     if (zeile.typ === "gruppe") {
-      sektionen.push({ gruppe: zeile, kinder: [] });
+      sektionen.push({ gruppe: zeile, kinder });
+      kinder = [];
     } else if (zeile.typ === "gesamt" || zeile.typ === "sonder") {
       fussZeilen.push(zeile);
-    } else if (sektionen.length > 0) {
-      sektionen[sektionen.length - 1].kinder.push(zeile);
+    } else {
+      kinder.push(zeile);
     }
   }
   return { sektionen, fussZeilen };
@@ -89,29 +94,6 @@ export default function FinanzberichtDownloadTabelle({
             const s = spalten(sektion.gruppe);
             return (
               <Fragment key={i}>
-                <tr
-                  onClick={aufklappbar ? () => toggle(i) : undefined}
-                  className={
-                    "bg-vtg-yellow font-medium text-neutral-900" +
-                    (aufklappbar ? " cursor-pointer select-none hover:bg-vtg-orange hover:text-white" : "")
-                  }
-                >
-                  <td className="p-3">
-                    {aufklappbar && (
-                      <span className="mr-2 inline-block w-3 text-xs">{istOffen ? "▾" : "▸"}</span>
-                    )}
-                    {sektion.gruppe.konto}
-                  </td>
-                  <td className="p-3 text-right">{formatEuroOrBlank(s.ausgaben)}</td>
-                  {vollSpalten && (
-                    <>
-                      <td className="p-3 text-right">{formatEuroOrBlank(s.nichtZuFaehig)}</td>
-                      <td className="p-3 text-right">{formatEuroOrBlank(s.plan)}</td>
-                      <td className="p-3 text-right">{formatEuroOrBlank(s.diffEur)}</td>
-                      <td className="p-3 text-right">{formatProzent(s.diffProz)}</td>
-                    </>
-                  )}
-                </tr>
                 {istOffen &&
                   sektion.kinder.map((kind, j) => {
                     const ks = spalten(kind);
@@ -130,6 +112,29 @@ export default function FinanzberichtDownloadTabelle({
                       </tr>
                     );
                   })}
+                <tr
+                  onClick={aufklappbar ? () => toggle(i) : undefined}
+                  className={
+                    "bg-vtg-yellow font-medium text-neutral-900" +
+                    (aufklappbar ? " cursor-pointer select-none hover:bg-vtg-orange hover:text-white" : "")
+                  }
+                >
+                  <td className="p-3">
+                    {aufklappbar && (
+                      <span className="mr-2 inline-block w-3 text-xs">{istOffen ? "▴" : "▸"}</span>
+                    )}
+                    {sektion.gruppe.konto}
+                  </td>
+                  <td className="p-3 text-right">{formatEuroOrBlank(s.ausgaben)}</td>
+                  {vollSpalten && (
+                    <>
+                      <td className="p-3 text-right">{formatEuroOrBlank(s.nichtZuFaehig)}</td>
+                      <td className="p-3 text-right">{formatEuroOrBlank(s.plan)}</td>
+                      <td className="p-3 text-right">{formatEuroOrBlank(s.diffEur)}</td>
+                      <td className="p-3 text-right">{formatProzent(s.diffProz)}</td>
+                    </>
+                  )}
+                </tr>
               </Fragment>
             );
           })}

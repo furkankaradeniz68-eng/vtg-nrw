@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { contentDisposition } from "@/lib/content-disposition";
 import { get } from "@vercel/blob";
 import { requireSession } from "@/lib/auth";
 import { istVerfahrenErreichbar } from "@/lib/bc-companies";
@@ -27,7 +28,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   return new NextResponse(result.stream, {
     headers: {
       "Content-Type": result.blob.contentType || "application/octet-stream",
-      "Content-Disposition": `attachment; filename="${entry.filename.replace(/"/g, "")}"`,
+      "Content-Disposition": contentDisposition(entry.filename),
     },
   });
 }
