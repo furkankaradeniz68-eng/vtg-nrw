@@ -42,7 +42,7 @@ export default function HomePage() {
                 landesweit zu einem Dachverband zusammengeschlossen. Mehr zu
                 den Teilnehmergemeinschaften selbst finden Sie unter &gt;{" "}
                 <a
-                  href="https://www.landentwicklung.rlp.de/Internet/global/inetcntr.nsf/dlr_web_full.xsp?src=EU4WP82QQ4&p1=title%3DTeilnehmergemeinschaft+TG%7E%7Eurl%3D%2FInternet%2Fglobal%2Fthemen.nsf%2F%28Web_P_LEW_UKat_XP%29%2FD3FFD1CAD808757DC1256F0A004783FC%3FOpenDocument&p3=J0PCX9RS7G&p4=78HV82A9P5"
+                  href="https://www.landentwicklung.rlp.de/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-bold text-vtg-orange hover:underline"
