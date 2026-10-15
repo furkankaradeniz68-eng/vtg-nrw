@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SimpleTable from "@/components/SimpleTable";
 import VerfahrenSearchSelect from "@/components/VerfahrenSearchSelect";
+import DirectUploadForm from "@/components/DirectUploadForm";
 import { getAllVerfahren, getLastSync, formatDateTime } from "@/lib/bc-companies";
 import { getAllDownloads, type DownloadCategory } from "@/lib/verfahren-downloads";
 
@@ -32,7 +33,7 @@ export default async function AdminDashboardPage() {
       </p>
 
       <h2 className="mb-4 font-heading text-lg font-bold text-neutral-900">Neue Datei zuweisen</h2>
-      <form
+      <DirectUploadForm
         action="/api/verfahren-downloads/upload"
         method="POST"
         encType="multipart/form-data"
@@ -63,7 +64,7 @@ export default async function AdminDashboardPage() {
         <button type="submit" className={`mt-2 self-start ${primaryButtonClass}`}>
           Hochladen
         </button>
-      </form>
+      </DirectUploadForm>
 
       <h2 className="mb-4 font-heading text-lg font-bold text-neutral-900">Zugewiesene Dateien</h2>
       {downloads.length > 0 ? (

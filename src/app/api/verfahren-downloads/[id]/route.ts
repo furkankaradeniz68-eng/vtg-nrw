@@ -6,6 +6,10 @@ import { istVerfahrenErreichbar } from "@/lib/bc-companies";
 import { BLOB_TOKEN } from "@/lib/blob-token";
 import { getDownloadById } from "@/lib/verfahren-downloads";
 
+// Grosse Dateien werden durch diese Funktion gestreamt; Standard-Zeitlimit koennte
+// bei langsamen Verbindungen zu knapp sein.
+export const maxDuration = 300;
+
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireSession();
   const { id } = await params;
