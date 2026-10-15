@@ -79,14 +79,14 @@ export default function SessionTimerBar() {
     <div
       role="timer"
       aria-live="off"
-      className="bg-black px-4 py-1.5 text-center text-xs text-white sm:text-sm"
+      className="border-b border-neutral-200 bg-white px-4 py-1.5 text-center text-xs text-black sm:text-sm"
     >
       {remaining === 0 ? (
         <span>Sie werden jetzt abgemeldet …</span>
       ) : (
         <>
           <span>Automatische Abmeldung in </span>
-          <strong className={`tabular-nums ${warn ? "text-vtg-yellow" : ""}`}>{format(remaining)} Min.</strong>
+          <strong className={`tabular-nums ${warn ? "text-red-600" : ""}`}>{format(remaining)} Min.</strong>
         </>
       )}
     </div>
