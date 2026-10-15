@@ -4,8 +4,11 @@ import { verifyCredentials } from "@/lib/credentials";
 import {
   createSessionToken,
   SESSION_COOKIE_NAME,
+  SESSION_EXP_COOKIE_NAME,
   SESSION_IDLE_TIMEOUT_SECONDS,
   sessionCookieOptions,
+  sessionExpCookieOptions,
+  sessionExpCookieValue,
 } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -22,15 +25,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Benutzername oder Passwort ist falsch." }, { status: 401 });
   }
 
+  const exp = Date.now() + SESSION_IDLE_TIMEOUT_SECONDS * 1000;
   const token = createSessionToken({
     username: user.username,
     role: user.role,
-    exp: Date.now() + SESSION_IDLE_TIMEOUT_SECONDS * 1000,
+    exp,
     ...(user.alleMandanten ? { alleMandanten: true } : {}),
   });
 
   const store = await cookies();
   store.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
+  store.set(SESSION_EXP_COOKIE_NAME, sessionExpCookieValue(exp), sessionExpCookieOptions());
 
   return NextResponse.json({ ok: true, role: user.role });
 }

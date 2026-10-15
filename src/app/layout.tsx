@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat, Roboto } from "next/font/google";
 import "./globals.css";
 import SiteChrome from "@/components/SiteChrome";
+import SessionTimerBar from "@/components/SessionTimerBar";
 import { getSession } from "@/lib/auth";
 import type { MemberRole } from "@/lib/nav";
 
@@ -37,6 +38,7 @@ export default async function RootLayout({
       className={`${montserrat.variable} ${roboto.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <SessionTimerBar />
         <SiteChrome loggedIn={!!session} role={role} isAdmin={session?.role === "admin"}>
           {children}
         </SiteChrome>

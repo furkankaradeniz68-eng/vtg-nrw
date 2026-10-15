@@ -29,6 +29,20 @@ export function sessionCookieOptions() {
   };
 }
 
+// Lesbares (nicht httpOnly) Begleit-Cookie fuer die Restzeit-Anzeige im Browser.
+// Enthaelt nur Ablaufzeit und Server-Zeit ("{exp}-{jetzt}" in Millisekunden), keine
+// Sitzungsdaten; die eigentliche Sitzung bleibt im httpOnly-Cookie oben. Die
+// Server-Zeit dient dazu, eine falsch gehende Uhr des Browsers auszugleichen.
+export const SESSION_EXP_COOKIE_NAME = "vtg_session_exp";
+
+export function sessionExpCookieOptions() {
+  return { ...sessionCookieOptions(), httpOnly: false };
+}
+
+export function sessionExpCookieValue(exp: number): string {
+  return `${exp}-${Date.now()}`;
+}
+
 function getSecret(): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret) throw new Error("SESSION_SECRET ist nicht gesetzt.");
