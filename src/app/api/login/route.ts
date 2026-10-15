@@ -26,6 +26,7 @@ export async function POST(request: Request) {
     username: user.username,
     role: user.role,
     exp: Date.now() + SESSION_IDLE_TIMEOUT_SECONDS * 1000,
+    ...(user.alleMandanten ? { alleMandanten: true } : {}),
   });
 
   const store = await cookies();

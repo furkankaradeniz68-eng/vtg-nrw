@@ -5,6 +5,7 @@ import { findBcCompanyByHomepageUsername } from "@/lib/bc-companies";
 
 type DlrCredential = { username: string; passwordHash: string; dlrNr: string };
 type AdminCredential = { username: string; passwordHash: string };
+type DlrAlleCredential = { username: string; passwordHash: string };
 
 // Abonnent-Logins kommen (wie bei vtg-rlp) live aus dem BC-Snapshot
 // (homepageUsername/homepagePassword, siehe bc-companies.ts), nicht mehr aus
@@ -14,7 +15,16 @@ type AdminCredential = { username: string; passwordHash: string };
 type CredentialsData = {
   dlr: DlrCredential[];
   admin: AdminCredential[];
+  // Interne Logins mit DLR-Rechten (kein Admin), aber Sicht auf alle Mandanten.
+  dlrAlle: DlrAlleCredential[];
 };
+
+// Optionale zweite Env-Variable CREDENTIALS_INTERN_JSON (gleiches base64-Format,
+// Felder admin und/oder dlrAlle). So lassen sich die internen VTG-Logins
+// pflegen, ohne die (nicht auslesbare) CREDENTIALS_JSON mit den
+// Bezirksregierungs-Logins neu aufbauen zu muessen. Logins in dlrAlle sind
+// kein Admin mehr: gleichnamige Eintraege aus CREDENTIALS_JSON.admin entfallen.
+type InternCredentialsData = { admin?: AdminCredential[]; dlrAlle?: DlrAlleCredential[] };
 
 let cached: CredentialsData | null = null;
 
@@ -24,7 +34,24 @@ function loadCredentials(): CredentialsData {
   if (!raw) throw new Error("CREDENTIALS_JSON ist nicht gesetzt.");
   // Base64-encoded: bcrypt hashes contain `$`, which Next's .env loader
   // (dotenv-expand) otherwise treats as a variable reference and strips.
-  cached = JSON.parse(Buffer.from(raw, "base64").toString("utf-8")) as CredentialsData;
+  const basis = JSON.parse(Buffer.from(raw, "base64").toString("utf-8")) as Omit<CredentialsData, "dlrAlle"> &
+    Partial<Pick<CredentialsData, "dlrAlle">>;
+
+  const internRaw = process.env.CREDENTIALS_INTERN_JSON;
+  const intern: InternCredentialsData = internRaw
+    ? (JSON.parse(Buffer.from(internRaw, "base64").toString("utf-8")) as InternCredentialsData)
+    : {};
+
+  const dlrAlle = [...(basis.dlrAlle ?? []), ...(intern.dlrAlle ?? [])];
+  const dlrAlleNamen = new Set(dlrAlle.map((d) => d.username));
+  const neueAdmins = intern.admin ?? [];
+  const neueAdminNamen = new Set(neueAdmins.map((a) => a.username));
+  const admin = [
+    ...basis.admin.filter((a) => !dlrAlleNamen.has(a.username) && !neueAdminNamen.has(a.username)),
+    ...neueAdmins,
+  ];
+
+  cached = { dlr: basis.dlr, admin, dlrAlle };
   return cached;
 }
 
@@ -37,7 +64,7 @@ function timingSafePlaintextEqual(a: string, b: string): boolean {
   return crypto.timingSafeEqual(aHash, bHash);
 }
 
-export type VerifiedUser = { role: SessionRole; username: string } | null;
+export type VerifiedUser = { role: SessionRole; username: string; alleMandanten?: boolean } | null;
 
 export async function verifyCredentials(username: string, password: string): Promise<VerifiedUser> {
   const creds = loadCredentials();
@@ -46,6 +73,11 @@ export async function verifyCredentials(username: string, password: string): Pro
   const admin = creds.admin.find((a) => a.username === name);
   if (admin && (await bcrypt.compare(password, admin.passwordHash))) {
     return { role: "admin", username: admin.username };
+  }
+
+  const dlrAlle = creds.dlrAlle.find((d) => d.username === name);
+  if (dlrAlle && (await bcrypt.compare(password, dlrAlle.passwordHash))) {
+    return { role: "dlr", username: dlrAlle.username, alleMandanten: true };
   }
 
   const dlr = creds.dlr.find((d) => d.username === name);

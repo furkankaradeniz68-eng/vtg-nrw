@@ -8,6 +8,9 @@ export type SessionPayload = {
   username: string;
   role: SessionRole;
   exp: number;
+  // Nur bei role "dlr": Login ist einem DLR gleichgestellt, sieht aber alle
+  // Mandanten statt nur die einer Bezirksregierung (z.B. vtggs, ADD.RLP, vtgnews).
+  alleMandanten?: boolean;
 };
 
 export const SESSION_COOKIE_NAME = "vtg_session";

@@ -8,8 +8,9 @@ export const metadata: Metadata = { title: "Verfahrensauswahl | VTG Nordrhein-We
 
 export default async function VerfahrensauswahlPage() {
   const session = await requireInternSession();
+  // Admin und DLR-Logins mit alleMandanten (z.B. vtggs) sehen alle Mandanten.
   const list =
-    session.role === "admin"
+    session.role === "admin" || session.alleMandanten
       ? await getAllVerfahren()
       : ((await getVerfahrenByBezirksregierung())[session.username] ?? []);
 

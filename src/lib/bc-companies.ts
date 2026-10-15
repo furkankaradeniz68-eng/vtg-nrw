@@ -142,12 +142,13 @@ export async function getVerfahrenByBezirksregierung(): Promise<Record<string, V
 // Zugriffsregeln (analog zur urspruenglichen WP-Rollenlogik):
 // Abonnent sieht nur die eigene Produktnummer (username == produkt_nr),
 // DLR sieht nur Verfahren seiner Bezirksregierung (username == BEZIRKSREGIERUNG_ZIFFER[...].key),
-// Admin hat vollen Zugriff.
+// Admin und DLR-Logins mit alleMandanten haben vollen Zugriff.
 export async function istVerfahrenErreichbar(
-  session: { role: SessionRole; username: string },
+  session: { role: SessionRole; username: string; alleMandanten?: boolean },
   nr: string,
 ): Promise<boolean> {
   if (session.role === "admin") return true;
+  if (session.role === "dlr" && session.alleMandanten) return true;
   if (session.role === "abonnent") {
     return nr === session.username;
   }
