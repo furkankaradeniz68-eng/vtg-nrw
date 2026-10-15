@@ -87,10 +87,6 @@ export default function SessionTimerBar() {
         <>
           <span>Automatische Abmeldung in </span>
           <strong className={`tabular-nums ${warn ? "text-vtg-yellow" : ""}`}>{format(remaining)} Min.</strong>
-          <span className="hidden text-neutral-400 sm:inline">
-            {" "}
-            &middot; Die Zeit beginnt bei jedem Klick auf einen Link oder Seitenwechsel neu.
-          </span>
         </>
       )}
     </div>
