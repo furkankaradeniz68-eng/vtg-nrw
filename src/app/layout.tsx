@@ -38,7 +38,7 @@ export default async function RootLayout({
       className={`${montserrat.variable} ${roboto.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SessionTimerBar />
+        <SessionTimerBar username={session?.username} />
         <SiteChrome loggedIn={!!session} role={role} isAdmin={session?.role === "admin"}>
           {children}
         </SiteChrome>

@@ -26,7 +26,7 @@ function format(seconds: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export default function SessionTimerBar() {
+export default function SessionTimerBar({ username }: { username?: string | null }) {
   const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
@@ -79,12 +79,13 @@ export default function SessionTimerBar() {
     <div
       role="timer"
       aria-live="off"
-      className="border-b border-neutral-200 bg-white px-4 py-1.5 text-center text-xs text-black sm:text-sm"
+      className="border-b border-neutral-200 bg-white px-4 py-1 text-center text-[8px] text-black sm:text-[10px]"
     >
       {remaining === 0 ? (
         <span>Sie werden jetzt abgemeldet …</span>
       ) : (
         <>
+          {username && <span>Angemeldet als: <strong>{username}</strong> &middot; </span>}
           <span>Automatische Abmeldung in </span>
           <strong className={`tabular-nums ${warn ? "text-red-600" : ""}`}>{format(remaining)} Min.</strong>
         </>
