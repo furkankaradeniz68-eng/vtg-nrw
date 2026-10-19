@@ -20,11 +20,12 @@ type CredentialsData = {
 };
 
 // Optionale zweite Env-Variable CREDENTIALS_INTERN_JSON (gleiches base64-Format,
-// Felder admin und/oder dlrAlle). So lassen sich die internen VTG-Logins
+// Felder admin, dlrAlle und/oder dlr). Eintraege in dlr ueberschreiben gleichnamige
+// Bezirksregierungs-Logins aus CREDENTIALS_JSON (z.B. nach einer Passwortaenderung). So lassen sich die internen VTG-Logins
 // pflegen, ohne die (nicht auslesbare) CREDENTIALS_JSON mit den
 // Bezirksregierungs-Logins neu aufbauen zu muessen. Logins in dlrAlle sind
 // kein Admin mehr: gleichnamige Eintraege aus CREDENTIALS_JSON.admin entfallen.
-type InternCredentialsData = { admin?: AdminCredential[]; dlrAlle?: DlrAlleCredential[] };
+type InternCredentialsData = { admin?: AdminCredential[]; dlrAlle?: DlrAlleCredential[]; dlr?: DlrCredential[] };
 
 let cached: CredentialsData | null = null;
 
@@ -51,7 +52,11 @@ function loadCredentials(): CredentialsData {
     ...neueAdmins,
   ];
 
-  cached = { dlr: basis.dlr, admin, dlrAlle };
+  const neueDlr = intern.dlr ?? [];
+  const neueDlrNamen = new Set(neueDlr.map((d) => d.username));
+  const dlr = [...basis.dlr.filter((d) => !neueDlrNamen.has(d.username)), ...neueDlr];
+
+  cached = { dlr, admin, dlrAlle };
   return cached;
 }
 
