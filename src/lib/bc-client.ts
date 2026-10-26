@@ -128,6 +128,23 @@ type ODataResponse<T> = { value: T[]; "@odata.nextLink"?: string };
 // Liest eine BC-Entity vollstaendig aus, inkl. Paging ueber @odata.nextLink
 // (BC deckelt Antworten auf 20.000 Zeilen/Seite).
 export async function fetchBcEntityAllPages<T>(entity: "vtgCompanies" | "vtgBudgetLines"): Promise<T[]> {
+  // BC wirft bei seitenweisem Abruf gelegentlich 410 "SkipTokenIsNoLongerValid" (z. B. wenn BC
+  // waehrenddessen neu aufbaut). Dann beginnt der Abruf von vorn, bis zu dreimal.
+  const VERSUCHE = 3;
+  for (let versuch = 1; ; versuch++) {
+    try {
+      return await holeAlleSeiten<T>(entity);
+    } catch (err) {
+      if (!(err instanceof BcSkipTokenError) || versuch >= VERSUCHE) throw err;
+      console.warn(`BC-Abruf ${entity}: Skip-Token ungueltig, neuer Versuch ${versuch + 1}/${VERSUCHE}`);
+      await new Promise((r) => setTimeout(r, versuch * 10_000));
+    }
+  }
+}
+
+class BcSkipTokenError extends Error {}
+
+async function holeAlleSeiten<T>(entity: string): Promise<T[]> {
   const token = await getToken();
   const results: T[] = [];
   let url: string | undefined = `${BC_NRW_BASE_URL}/${entity}`;
@@ -137,8 +154,10 @@ export async function fetchBcEntityAllPages<T>(entity: "vtgCompanies" | "vtgBudg
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) {
-      console.error(`BC-Abfrage fehlgeschlagen (${entity}): ${res.status} ${await res.text()}`);
-      throw new Error(`BC-Abfrage fehlgeschlagen (${entity}): HTTP ${res.status} (Details im Server-Log)`);
+      const body = await res.text();
+      console.error(`BC-Abfrage fehlgeschlagen (${entity}): ${res.status} ${body}`);
+      const msg = `BC-Abfrage fehlgeschlagen (${entity}): HTTP ${res.status} (Details im Server-Log)`;
+      throw res.status === 410 && body.includes("SkipTokenIsNoLongerValid") ? new BcSkipTokenError(msg) : new Error(msg);
     }
     const data = (await res.json()) as ODataResponse<T>;
     results.push(...data.value);
