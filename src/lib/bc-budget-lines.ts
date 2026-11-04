@@ -404,11 +404,22 @@ export async function findeFinanzDownloadKategorie(
     // oben). Die angezeigte Kontonummer ist der laengste gemeinsame
     // Ziffern-Praefix der zusammengefassten Konten. Diff% wird auf dieser
     // Ebene im Original nicht ausgewiesen (nur bei Summe-/Gesamtzeilen).
-    const positionsListe = gruppenNachBasisOderBeschreibung(gruppenRows).map((posRows) => {
-      const sortierteRows = [...posRows].sort((a, b) => a.glAccountNo.localeCompare(b.glAccountNo));
-      const beschreibung = (sortierteRows[0].glAccountName.split("/")[0] ?? sortierteRows[0].glAccountName).trim();
-      return { beschreibung, posRows: sortierteRows, minCode: sortierteRows[0].glAccountNo };
-    });
+    //
+    // Kundenwunsch (2026-11-04, wie bei RLP): Bei Sonstige Ausfuehrungskosten/
+    // A2 und Einnahmen wird NICHT zusammengefasst — jedes Konto steht einzeln
+    // mit voller Kontonummer und voller Bezeichnung (inkl. Teilbereich) in der
+    // aufgeklappten Liste. Nur Ausfuehrungskosten A1 fasst weiter zusammen.
+    const positionsListe = vollSpalten
+      ? gruppenNachBasisOderBeschreibung(gruppenRows).map((posRows) => {
+          const sortierteRows = [...posRows].sort((a, b) => a.glAccountNo.localeCompare(b.glAccountNo));
+          const beschreibung = (sortierteRows[0].glAccountName.split("/")[0] ?? sortierteRows[0].glAccountName).trim();
+          return { beschreibung, posRows: sortierteRows, minCode: sortierteRows[0].glAccountNo };
+        })
+      : gruppenRows.map((row) => ({
+          beschreibung: row.glAccountName.trim(),
+          posRows: [row],
+          minCode: row.glAccountNo,
+        }));
     positionsListe.sort((a, b) => a.minCode.localeCompare(b.minCode));
 
     for (const { beschreibung, posRows } of positionsListe) {
@@ -431,7 +442,9 @@ export async function findeFinanzDownloadKategorie(
       gHj += aHj;
       pHj += plHj;
 
-      const posSchluessel = laengsterGemeinsamerPraefix(posRows.map((r) => r.glAccountNo));
+      const posSchluessel = vollSpalten
+        ? laengsterGemeinsamerPraefix(posRows.map((r) => r.glAccountNo))
+        : posRows[0].glAccountNo;
 
       if (vollSpalten) {
         positionsZeilen.push({

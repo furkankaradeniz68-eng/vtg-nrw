@@ -32,7 +32,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Verfahren nicht gefunden." }, { status: 404 });
   }
   const kategorie = await findeFinanzDownloadKategorie(id, kategorieSlug);
-  const orientation = kategorieSlug === "einnahmen" ? "portrait" : "landscape";
+  // A1 im Querformat (volle Soll-Ist-Spaltenbreite), A2 und Einnahmen im
+  // Hochformat (Kundenwunsch 2026-11-04, wie bei RLP).
+  const orientation = kategorieSlug === "ausfuehrungskosten-a1" ? "landscape" : "portrait";
   const pdfBytes = await generateFinanzberichtPdf({ verfahren, kategorie, orientation });
   const info = KATEGORIE_INFO[kategorieSlug];
   const dateiname = `${info.titel}${info.suffix ? `-${info.suffix}` : ""}-${verfahren.nr}.pdf`.replace(/\s+/g, "_");
