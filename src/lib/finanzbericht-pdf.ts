@@ -29,8 +29,9 @@ const HEADER_LABEL_SIZE = 7;
 const A4_PORTRAIT: [number, number] = [595.28, 841.89];
 const A4_LANDSCAPE: [number, number] = [841.89, 595.28];
 
+// Betraege, die auf 0,00 gerundet werden, ohne Minus anzeigen (kein "-0,00").
 function formatEuro(n: number): string {
-  return n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (Math.abs(n) < 0.005 ? 0 : n).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function formatEuroOrBlank(n: number | null): string {

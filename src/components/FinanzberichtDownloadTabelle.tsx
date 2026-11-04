@@ -3,8 +3,9 @@
 import { Fragment, useState } from "react";
 import type { FinanzDownloadZeile, FinanzAnsicht } from "@/lib/bc-budget-lines";
 
+// Betraege, die auf 0,00 gerundet werden, ohne Minus anzeigen (kein "-0,00").
 function formatEuro(n: number) {
-  return n.toLocaleString("de-DE", {
+  return (Math.abs(n) < 0.005 ? 0 : n).toLocaleString("de-DE", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -33,7 +34,7 @@ function gruppiere(zeilen: readonly FinanzDownloadZeile[]) {
       sektionen.push({ gruppe: zeile, kinder });
       kinder = [];
     } else if (zeile.typ === "gesamt" || zeile.typ === "sonder") {
-      fussZeilen.push(zeile);
+      if (!zeile.nurPdf) fussZeilen.push(zeile);
     } else {
       kinder.push(zeile);
     }
