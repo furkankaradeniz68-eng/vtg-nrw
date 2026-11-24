@@ -6,8 +6,9 @@
 // pro Login mit Ablaufdatum) gibt es hier bewusst kein Ablaufdatum, da es
 // sich um dauerhafte Finanzunterlagen handelt statt um befristete
 // Mitgliederrundschreiben.
-import { put, del, get } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 import { BLOB_TOKEN } from "@/lib/blob-token";
+import { ladeBlobJson, zurAnzeige } from "@/lib/blob-json";
 
 const META_PATHNAME = "verfahren-downloads-meta.json";
 
@@ -26,12 +27,7 @@ export type VerfahrenDownloadEntry = {
 // Anwendung selbst laufend veraendert (Upload/Loeschung), siehe
 // bc-companies.ts fuer denselben Grund beim BC-Firmen-Snapshot.
 async function loadEntries(): Promise<VerfahrenDownloadEntry[]> {
-  const result = await get(META_PATHNAME, { access: "private", useCache: false, token: BLOB_TOKEN }).catch(
-    () => null,
-  );
-  if (!result || result.statusCode !== 200) return [];
-  const text = await new Response(result.stream).text();
-  return JSON.parse(text) as VerfahrenDownloadEntry[];
+  return (await ladeBlobJson<VerfahrenDownloadEntry[]>(META_PATHNAME)) ?? [];
 }
 
 async function saveEntries(entries: VerfahrenDownloadEntry[]): Promise<void> {
@@ -48,12 +44,12 @@ export async function getDownloadsForVerfahren(
   verfahrenNr: string,
   category: DownloadCategory,
 ): Promise<VerfahrenDownloadEntry[]> {
-  const entries = await loadEntries();
+  const entries = await zurAnzeige(loadEntries, []);
   return entries.filter((e) => e.verfahrenNr === verfahrenNr && e.category === category);
 }
 
 export async function getAllDownloads(): Promise<VerfahrenDownloadEntry[]> {
-  return loadEntries();
+  return zurAnzeige(loadEntries, []);
 }
 
 export async function getDownloadById(id: string): Promise<VerfahrenDownloadEntry | undefined> {
